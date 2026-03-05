@@ -13,7 +13,7 @@ echo "Building rootfs for architecture: ${ARCH}"
 docker pull --platform "linux/${ARCH}" "${DEBIAN_IMAGE}"
 
 # Create container and install packages
-CONTAINER_ID=$(docker create --platform "linux/${ARCH}" "${DEBIAN_IMAGE}" /bin/true)
+CONTAINER_ID=$(docker create --platform "linux/${ARCH}" "${DEBIAN_IMAGE}" sleep infinity)
 
 docker start "${CONTAINER_ID}"
 docker exec "${CONTAINER_ID}" apt-get update
@@ -24,7 +24,8 @@ docker exec "${CONTAINER_ID}" rm -rf /var/lib/apt/lists/*
 # Create /var/tmp -> /tmp symlink
 docker exec "${CONTAINER_ID}" bash -c "rm -rf /var/tmp && ln -s /tmp /var/tmp"
 
-# Export filesystem
+# Stop container and export filesystem
+docker stop "${CONTAINER_ID}"
 FILENAME="debian-rootfs-${ARCH}.tar.gz"
 docker export "${CONTAINER_ID}" | gzip > "${FILENAME}"
 
