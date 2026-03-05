@@ -1,0 +1,61 @@
+name: Build Debian Rootfs
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version tag (e.g., v1, v2)'
+        required: true
+      debian_image:
+        description: 'Debian base image (e.g., debian:bookworm-slim, debian:bookworm-20250224-slim)'
+        required: false
+        default: 'debian:bookworm-slim'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU (for arm64 cross-build)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Build rootfs
+        run: bash build.sh ${{ matrix.arch }} "${{ inputs.debian_image }}"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rootfs-${{ matrix.arch }}
+          path: |
+            debian-rootfs-${{ matrix.arch }}.tar.gz
+            debian-rootfs-${{ matrix.arch }}.tar.gz.sha256
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.version }}
+          name: Debian Rootfs ${{ inputs.version }}
+          body: |
+            Debian rootfs tarballs for sandboxed execution.
+
+            **Base image:** ${{ inputs.debian_image }}
+            **Packages included:** bash, python3, python3-pip, python3-venv, coreutils, grep, sed, findutils, curl, wget, git, tar, unzip, jq, gawk, nodejs, npm, ca-certificates
+            **Architectures:** amd64, arm64
+          files: |
+            rootfs-amd64/debian-rootfs-amd64.tar.gz
+            rootfs-amd64/debian-rootfs-amd64.tar.gz.sha256
+            rootfs-arm64/debian-rootfs-arm64.tar.gz
+            rootfs-arm64/debian-rootfs-arm64.tar.gz.sha256
