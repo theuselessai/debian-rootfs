@@ -52,7 +52,7 @@ jobs:
             Debian rootfs tarballs for sandboxed execution.
 
             **Base image:** ${{ inputs.debian_image }}
-            **Packages included:** bash, python3, python3-pip, python3-venv, coreutils, grep, sed, findutils, curl, wget, git, tar, unzip, jq, gawk, nodejs, npm, ca-certificates
+            **Packages included:** bash, python3, python3-pip, python3-venv, coreutils, grep, sed, findutils, curl, wget, git, tar, unzip, jq, gawk, ca-certificates
             **Architectures:** amd64, arm64
           files: |
             rootfs-amd64/debian-rootfs-amd64.tar.gz
