@@ -21,6 +21,7 @@ docker exec "${CONTAINER_ID}" apt-get install -y --no-install-recommends ${TIER1
 docker exec "${CONTAINER_ID}" apt-get clean
 docker exec "${CONTAINER_ID}" rm -rf /var/lib/apt/lists/*
 docker exec "${CONTAINER_ID}" rm -rf /tmp/* /var/tmp/*
+docker exec "${CONTAINER_ID}" rm -f /.dockerenv
 
 # Create /var/tmp -> /tmp symlink
 docker exec "${CONTAINER_ID}" bash -c "rm -rf /var/tmp && ln -s /tmp /var/tmp"
